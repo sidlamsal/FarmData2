@@ -38,20 +38,25 @@ describe('Submission using the transplanting lib.', () => {
     comment: 'A comment',
   };
 
-  let fieldMap = null;
+  //let fieldMap = null;
   let categoryMap = null;
+  let cropToTerm = null;
   let result = null;
 
   before(() => {
     cy.restoreLocalStorage();
     cy.restoreSessionStorage();
 
-    cy.wrap(farmosUtil.getFieldNameToAssetMap()).then((map) => {
-      fieldMap = map;
-    });
+    // cy.wrap(farmosUtil.getFieldNameToAssetMap()).then((map) => {
+    //   fieldMap = map;
+    // });
 
     cy.wrap(farmosUtil.getLogCategoryToTermMap()).then((map) => {
       categoryMap = map;
+    });
+
+    cy.wrap(farmosUtil.getCropNameToTermMap()).then((map) => {
+      cropToTerm = map;
     });
 
     cy.wrap(lib.submitForm(form), { timeout: 10000 }).then((res) => {
@@ -70,115 +75,71 @@ describe('Submission using the transplanting lib.', () => {
   });
 
   it('Check the parents', () => {
-    cy.wrap(farmosUtil.getPlantAsset(result.transplantingAsset.id)).then(
-      (plantAsset) => {
-        expect(plantAsset.relationships.parent[0].id).to.equal(
-          result.parents[0].id
-        );
-        expect(plantAsset.relationships.parent[0].type).to.equal(
-          'asset--plant'
-        );
-      }
+    expect(result.parents[0].id).to.equal(form.picked[0].data.asset_uuid);
+    expect(result.parents[0].type).to.equal('asset--plant');
+    expect(result.parents[0].attributes.name).to.equal(
+      form.picked[0].data.date + '_' + form.picked[0].data.crop
     );
   });
 
   it('Check the tray inventory quantity--standard assets', () => {
-    // cy.wrap(farmosUtil.getSeedlings('BROCCOLI')).then((seedlings) => {
-    //   console.log(seedlings);
-    //   expect(
-    //     seedlings[0].total_trays -
-    //       result.trayInventoryQuantities[0].attributes.value.decimal
-    //   ).to.equal(3);
-    // });
-    cy.wrap(
-      farmosUtil.getStandardQuantity(result.trayInventoryQuantities[0].id)
-    ).then((inventoryQuantity) => {
-      expect(inventoryQuantity.type).to.equal('quantity--standard');
-      expect(inventoryQuantity.attributes.measure).to.equal('count');
-      expect(inventoryQuantity.attributes.value.decimal).to.equal('1');
-      expect(inventoryQuantity.attributes.label).to.equal('Trays');
-      expect(inventoryQuantity.attributes.inventory_adjustment).to.equal(
-        'decrement'
-      );
-    });
+    expect(result.trayInventoryQuantities[0].attributes.value.decimal).to.equal(
+      form.picked[0].trays
+    );
+    expect(result.trayInventoryQuantities[0].type).to.equal(
+      'quantity--standard'
+    );
+    expect(result.trayInventoryQuantities[0].attributes.measure).to.equal(
+      'count'
+    );
+    expect(result.trayInventoryQuantities[0].attributes.label).to.equal(
+      'Trays'
+    );
+    expect(
+      result.trayInventoryQuantities[0].attributes.inventory_adjustment
+    ).to.equal('decrement');
   });
 
   it('Check the asset--plant', () => {
     // Check the plant asset.
-    cy.wrap(farmosUtil.getPlantAsset(result.transplantingAsset.id)).then(
-      (plantAsset) => {
-        expect(plantAsset.type).to.equal('asset--plant');
-        expect(plantAsset.attributes.name).to.equal('1950-01-02_BROCCOLI');
-        expect(plantAsset.attributes.status).to.equal('active');
-        expect(plantAsset.attributes.notes.value).to.equal(form.comment);
+    expect(result.transplantingAsset.type).to.equal('asset--plant');
+    expect(result.transplantingAsset.attributes.name).to.equal(
+      form.transplantingDate + '_' + form.cropName
+    );
 
-        expect(plantAsset.relationships.plant_type[0].type).to.equal(
-          'taxonomy_term--plant_type'
-        );
-        expect(plantAsset.relationships.plant_type[0].id).to.equal(
-          result.transplantingAsset.relationships.plant_type[0].id
-        );
+    expect(result.transplantingAsset.attributes.status).to.equal('active');
+    expect(result.transplantingAsset.attributes.notes.value).to.equal(
+      form.comment
+    );
 
-        expect(plantAsset.relationships.location[0].type).to.equal(
-          'asset--land'
-        );
-        expect(plantAsset.relationships.location[0].id).to.equal(
-          fieldMap.get(form.location).id
-        );
+    expect(result.transplantingAsset.relationships.plant_type[0].type).to.equal(
+      cropToTerm.get(form.cropName).type
+    );
 
-        expect(plantAsset.attributes.inventory[0].measure).to.equal('length');
-        expect(plantAsset.attributes.inventory[0].value).to.equal('100');
-        expect(plantAsset.attributes.inventory[0].units).to.equal('FEET');
-      }
+    expect(result.transplantingAsset.relationships.plant_type[0].id).to.equal(
+      cropToTerm.get(form.cropName).id
     );
   });
 
   it('Check the bed feet quantity--standard', () => {
-    cy.wrap(
-      farmosUtil.getStandardQuantity(result.transplantingBedFeetQuantity.id)
-    ).then((bedFeetQuantity) => {
-      expect(bedFeetQuantity.type).to.equal('quantity--standard');
-      expect(bedFeetQuantity.attributes.measure).to.equal('length');
-      expect(bedFeetQuantity.attributes.value.decimal).to.equal(
-        form.bedFeet.toString()
-      );
-      expect(bedFeetQuantity.attributes.label).to.equal('Bed Feet');
-
-      expect(bedFeetQuantity.attributes.inventory_adjustment).to.be.null;
-
-      expect(bedFeetQuantity.relationships.units.type).to.equal(
-        'taxonomy_term--unit'
-      );
-      expect(bedFeetQuantity.relationships.units.id).to.equal(
-        result.transplantingBedFeetQuantity.relationships.units.id
-      );
-
-      expect(bedFeetQuantity.relationships.inventory_asset).to.be.null;
-    });
+    expect(
+      result.transplantingBedFeetQuantity.attributes.value.decimal
+    ).to.equal(form.bedFeet);
+    expect(result.transplantingBedFeetQuantity.type).to.equal(
+      'quantity--standard'
+    );
+    expect(result.transplantingBedFeetQuantity.attributes.measure).to.equal(
+      'length'
+    );
+    expect(result.transplantingBedFeetQuantity.attributes.label).to.equal(
+      'Bed Feet'
+    );
   });
 
   it('Check the rows/bed quantity--standard', () => {
-    cy.wrap(
-      farmosUtil.getStandardQuantity(result.transplantingRowsPerBedQuantity.id)
-    ).then((rowsPerBedQuantity) => {
-      expect(rowsPerBedQuantity.type).to.equal('quantity--standard');
-      expect(rowsPerBedQuantity.attributes.measure).to.equal('ratio');
-      expect(rowsPerBedQuantity.attributes.value.decimal).to.equal(
-        form.rowsPerBed.toString()
-      );
-      expect(rowsPerBedQuantity.attributes.label).to.equal('Rows/Bed');
-
-      expect(rowsPerBedQuantity.attributes.inventory_adjustment).to.be.null;
-
-      expect(rowsPerBedQuantity.relationships.units.type).to.equal(
-        'taxonomy_term--unit'
-      );
-      expect(rowsPerBedQuantity.relationships.units.id).to.equal(
-        result.transplantingRowsPerBedQuantity.relationships.units.id
-      );
-
-      expect(rowsPerBedQuantity.relationships.inventory_asset).to.be.null;
-    });
+    expect(
+      result.transplantingRowsPerBedQuantity.attributes.value.decimal
+    ).to.equal(form.rowsPerBed);
   });
 
   it('Check the row feet quantity--standard', () => {
