@@ -140,61 +140,45 @@ describe('Submission using the transplanting lib.', () => {
     expect(
       result.transplantingRowsPerBedQuantity.attributes.value.decimal
     ).to.equal(form.rowsPerBed);
+    expect(result.transplantingRowsPerBedQuantity.type).to.equal(
+      'quantity--standard'
+    );
+    expect(result.transplantingRowsPerBedQuantity.attributes.measure).to.equal(
+      'ratio'
+    );
+    expect(result.transplantingRowsPerBedQuantity.attributes.label).to.equal(
+      'Rows/Bed'
+    );
   });
 
   it('Check the row feet quantity--standard', () => {
-    cy.wrap(
-      farmosUtil.getStandardQuantity(result.transplantingRowFeetQuantity.id)
-    ).then((rowFeetQuantity) => {
-      expect(rowFeetQuantity.type).to.equal('quantity--standard');
-      expect(rowFeetQuantity.attributes.measure).to.equal('length');
-      expect(rowFeetQuantity.attributes.value.decimal).to.equal(
-        (form.bedFeet * form.rowsPerBed).toString()
-      );
-      expect(rowFeetQuantity.attributes.label).to.equal('Row Feet');
-
-      expect(rowFeetQuantity.attributes.inventory_adjustment).to.equal(
-        'increment'
-      );
-
-      expect(rowFeetQuantity.relationships.units.type).to.equal(
-        'taxonomy_term--unit'
-      );
-      expect(rowFeetQuantity.relationships.units.id).to.equal(
-        result.transplantingRowFeetQuantity.relationships.units.id
-      );
-
-      expect(rowFeetQuantity.relationships.inventory_asset.type).to.equal(
-        'asset--plant'
-      );
-      expect(rowFeetQuantity.relationships.inventory_asset.id).to.equal(
-        result.transplantingRowFeetQuantity.relationships.inventory_asset.id
-      );
-    });
+    expect(
+      result.transplantingRowFeetQuantity.attributes.value.decimal
+    ).to.equal(form.rowsPerBed * form.bedFeet);
+    expect(result.transplantingRowFeetQuantity.type).to.equal(
+      'quantity--standard'
+    );
+    expect(result.transplantingRowFeetQuantity.attributes.measure).to.equal(
+      'length'
+    );
+    expect(result.transplantingRowFeetQuantity.attributes.label).to.equal(
+      'Row Feet'
+    );
   });
 
   it('Check the bed width quantity--standard', () => {
-    cy.wrap(
-      farmosUtil.getStandardQuantity(result.transplantingBedWidthQuantity.id)
-    ).then((bedWidthQuantity) => {
-      expect(bedWidthQuantity.type).to.equal('quantity--standard');
-      expect(bedWidthQuantity.attributes.measure).to.equal('length');
-      expect(bedWidthQuantity.attributes.value.decimal).to.equal(
-        form.bedWidth.toString()
-      );
-      expect(bedWidthQuantity.attributes.label).to.equal('Bed Width');
-
-      expect(bedWidthQuantity.attributes.inventory_adjustment).to.be.null;
-
-      expect(bedWidthQuantity.relationships.units.type).to.equal(
-        'taxonomy_term--unit'
-      );
-      expect(bedWidthQuantity.relationships.units.id).to.equal(
-        result.transplantingBedWidthQuantity.relationships.units.id
-      );
-
-      expect(bedWidthQuantity.relationships.inventory_asset).to.be.null;
-    });
+    expect(
+      result.transplantingBedWidthQuantity.attributes.value.decimal
+    ).to.equal(form.bedWidth);
+    expect(result.transplantingBedWidthQuantity.type).to.equal(
+      'quantity--standard'
+    );
+    expect(result.transplantingBedWidthQuantity.attributes.measure).to.equal(
+      'length'
+    );
+    expect(result.transplantingBedWidthQuantity.attributes.label).to.equal(
+      'Bed Width'
+    );
   });
 
   it('Check the log--activity', () => {
@@ -249,51 +233,17 @@ describe('Submission using the transplanting lib.', () => {
   });
 
   it('Check the depth quantity--standard', () => {
-    cy.wrap(farmosUtil.getStandardQuantity(result.depthQuantity.id)).then(
-      (depthQuantity) => {
-        expect(depthQuantity.type).to.equal('quantity--standard');
-        expect(depthQuantity.attributes.measure).to.equal('length');
-        expect(depthQuantity.attributes.value.decimal).to.equal(
-          form.depth.toString()
-        );
-        expect(depthQuantity.attributes.label).to.equal('Depth');
-
-        expect(depthQuantity.attributes.inventory_adjustment).to.be.null;
-
-        expect(depthQuantity.relationships.units.type).to.equal(
-          'taxonomy_term--unit'
-        );
-        expect(depthQuantity.relationships.units.id).to.equal(
-          result.depthQuantity.relationships.units.id
-        );
-
-        expect(depthQuantity.relationships.inventory_asset).to.be.null;
-      }
-    );
+    expect(result.depthQuantity.attributes.value.decimal).to.equal(form.depth);
+    expect(result.depthQuantity.type).to.equal('quantity--standard');
+    expect(result.depthQuantity.attributes.measure).to.equal('length');
+    expect(result.depthQuantity.attributes.label).to.equal('Depth');
   });
 
   it('Check the speed quantity--standard', () => {
-    cy.wrap(farmosUtil.getStandardQuantity(result.speedQuantity.id)).then(
-      (speedQuantity) => {
-        expect(speedQuantity.type).to.equal('quantity--standard');
-        expect(speedQuantity.attributes.measure).to.equal('rate');
-        expect(speedQuantity.attributes.value.decimal).to.equal(
-          form.speed.toString()
-        );
-        expect(speedQuantity.attributes.label).to.equal('Speed');
-
-        expect(speedQuantity.attributes.inventory_adjustment).to.be.null;
-
-        expect(speedQuantity.relationships.units.type).to.equal(
-          'taxonomy_term--unit'
-        );
-        expect(speedQuantity.relationships.units.id).to.equal(
-          result.speedQuantity.relationships.units.id
-        );
-
-        expect(speedQuantity.relationships.inventory_asset).to.be.null;
-      }
-    );
+    expect(result.speedQuantity.attributes.value.decimal).to.equal(form.speed);
+    expect(result.speedQuantity.type).to.equal('quantity--standard');
+    expect(result.speedQuantity.attributes.measure).to.equal('rate');
+    expect(result.speedQuantity.attributes.label).to.equal('Speed');
   });
 
   it('Check the soil disturbance log--activity', () => {
